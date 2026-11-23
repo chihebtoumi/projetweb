@@ -1,5 +1,7 @@
 from django.db import models
 from accountapp.models import Doctor
+from django.utils import timezone
+from django.core.exceptions import ValidationError
 # Create your models here.
 class Appointement(models.Model):
     reason=models.TextField()
@@ -18,6 +20,12 @@ class Appointement(models.Model):
     appointement_date=models.DateTimeField()
     doctor=models.ForeignKey(Doctor,on_delete=models.CASCADE,related_name="appointements")
     patient=models.ForeignKey("accountapp.Patient",on_delete=models.CASCADE,related_name="appointements")
+    def clean(self):
+        modified_date=self._state.adding or (
+            Appointement.objects.filter(pk=self.pk,appointement_date=self.appointement_date).exists()
+            )
+        if modified_date and self.appointement_date<=timezone.now():
+            raise ValidationError("la date du rendez-vous doit etre superieur a la date de creation")
     class Meta:
         ordering=["appointement_date"]
         constraints=[
@@ -27,3 +35,5 @@ class Appointement(models.Model):
                 violation_error_message="ce docteur possede un rdv avec cette date"
             )
         ]
+    def __str__(self):
+        return f"Rendez-vous du {self.appointement_date} avec le docteur {self.doctor.username} pour le patient {self.patient.username}"
