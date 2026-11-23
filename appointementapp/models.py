@@ -19,7 +19,7 @@ class Appointement(models.Model):
     doctor=models.ForeignKey(Doctor,on_delete=models.CASCADE,related_name="appointements")
     patient=models.ForeignKey("accountapp.Patient",on_delete=models.CASCADE,related_name="appointements")
     class Meta:
-        oredering=["appointement_date"]
+        ordering=["appointement_date"]
         constraints=[
             models.UniqueConstraint(
                 fields=["doctor","appointement_date"],
